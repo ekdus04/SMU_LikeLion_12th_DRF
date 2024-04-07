@@ -5,8 +5,8 @@ from users.models import User
 class Post(models.Model):
     title = models.CharField(max_length=50, null=True)
     content = models.CharField(max_length=500, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now=True)
-    modified_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(null=True, blank=True)
     view = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=True)
 
