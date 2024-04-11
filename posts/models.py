@@ -9,5 +9,3 @@ class Post(models.Model):
     modified_at = models.DateTimeField(null=True, blank=True)
     view = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=True)
-
-# Create your models here.
