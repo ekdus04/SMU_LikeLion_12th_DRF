@@ -32,7 +32,7 @@ def user_retrieve_api_view(request, users_id):
     
     elif request.method == 'PUT':
         serializer = UserSerializer(user, data=request.data)
-        if serializer.is_vaild():
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

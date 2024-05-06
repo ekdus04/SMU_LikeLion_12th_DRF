@@ -15,9 +15,9 @@ def like_list_api_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET', 'DELETE'])
-def like_retrieve_api_view(request, users_id):
+def like_retrieve_api_view(request, likes_id):
     try:
-        like = Like.objects.get(pk=users_id)
+        like = Like.objects.get(pk=likes_id)
     except Like.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
