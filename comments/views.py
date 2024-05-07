@@ -13,7 +13,7 @@ def comment_list_api_view(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, user=request.user)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

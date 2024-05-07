@@ -8,7 +8,7 @@ from likes.serializers import LikeSerializer
 @api_view(['POST'])
 def like_list_api_view(request):
     if request.method == 'POST':
-        serializer = LikeSerializer(data=request.data)
+        serializer = LikeSerializer(data=request.data, user=request.user)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
