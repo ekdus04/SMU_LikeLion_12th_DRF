@@ -12,3 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_posts_num(self, obj):
         return Post.objects.filter(user=obj).count()
+    
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+    
+    
