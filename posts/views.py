@@ -5,7 +5,9 @@ from rest_framework.decorators import api_view
 from posts.models import Post
 from posts.models import Comment
 from posts.models import Like
-from posts.serializers import PostSerializer
+from posts.serializers import PostSerializer, CommentSerializer, LikeSerializer
+
+# 내가 좋아요한 글
 
 @api_view(['GET', 'POST'])
 def post_list_api_view(request):
@@ -21,10 +23,10 @@ def post_list_api_view(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET', 'PUT', 'DELETE'])
-def post_retrieve_api_view(request, posts_id):
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def post_retrieve_api_view(request, post_id):
     try:
-        post = Post.objects.get(pk=posts_id)
+        post = Post.objects.get(pk=post_id)
     except Post.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -52,41 +54,45 @@ def post_retrieve_api_view(request, posts_id):
     
 
 @api_view(['GET', 'POST'])
-def new_comment_api_view(request, posts_id):
+def comment_list_api_view(request, post_id):
     if request.method == 'GET':
-        comments = Comment.objects.all(post_id=posts_id)
-        serializer = PostSerializer(comments, many=True)
+        comments = Comment.objects.filter(post_id=post_id)
+        serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = PostSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data)
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save(user=request.user, post=post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def post_comment_api_view(request, comments_id):
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def comment_retrieve_api_view(request, comment_id):
     try:
-        comment = Comment.objects.get(pk=comments_id)
-    except Post.DoesNotExist:
+        comment = Comment.objects.get(pk=comment_id)
+    except Comment.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
-        serializer = PostSerializer(comment)
+        serializer = CommentSerializer(comment)
         return Response(serializer.data)
     
     elif request.method == 'PUT':
-        serializer = PostSerializer(comment, data=request.data)
+        serializer = CommentSerializer(comment, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'PATCH':
-        serializer = PostSerializer(comment, data=request.data, partial=True)
+        serializer = CommentSerializer(comment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -96,18 +102,17 @@ def post_comment_api_view(request, comments_id):
     elif request.method == 'DELETE':
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
 
     
 @api_view(['POST', 'DELETE'])
-def post_like_api_view(request, posts_id):
+def like_api_view(request, post_id):
     try:
-        like = Like.objects.get(pk=posts_id)
+        post = Post.objects.get(pk=post_id, user=request.user)
     except Post.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'POST':
-        serializer = PostSerializer(data=request.data)
+        serializer = LikeSerializer(data=post)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

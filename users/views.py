@@ -3,10 +3,12 @@ from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from users.models import User
 from users.serializers import UserSerializer
 
+# 비밀번호 변경 시 보안장치 추가
+# user 정보 받아오기(user_id -> request.user로 변경)
 
 @api_view(['POST'])
 def user_list_api_view(request):
@@ -18,9 +20,9 @@ def user_list_api_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET', 'PATCH', 'DELETE'])
-def user_retrieve_api_view(request, users_id):
+def user_retrieve_api_view(request, user_id):
     try:
-        user = User.objects.get(pk=users_id)
+        user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -62,9 +64,9 @@ def jwt_api_view(request):
     )
 
 @api_view(['PATCH'])
-def patch_password_api_view(request, users_id):
+def patch_password_api_view(request, user_id):
     try:
-        user = User.objects.get(pk=users_id)
+        user = User.objects.get(pk=user_id)
         new_pwd = request.data["password"]
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)

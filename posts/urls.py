@@ -4,8 +4,8 @@ from posts import views
 
 urlpatterns = [
     path('', views.post_list_api_view, name='post-list'),
-    path('<int:posts_id>/', views.post_retrieve_api_view, name='post-retrieve'),
-    path('postcomment/<int:posts_id>', views.post_comment_api_view, name='post-comment'),
-    path('likes/<int:likes_id>/', views.post_like_api_view, name='post-like'),
-    path('comments/<int:comments_id>/', views.new_comment_api_view, name='post-newcomment'),
+    path('<int:post_id>/', views.post_retrieve_api_view, name='post-retrieve'),
+    path('comments/<int:post_id>/', views.comment_list_api_view, name='comment-list'),
+    path('comment/<int:comment_id>/', views.comment_retrieve_api_view, name='comment-retrieve'),
+    path('likes/<int:post_id>/', views.like_api_view, name='like'),
 ]
