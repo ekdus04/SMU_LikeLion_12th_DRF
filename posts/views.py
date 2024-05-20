@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status,viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from posts.models import Post
@@ -119,6 +119,11 @@ def like_api_view(request, post_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
+        like = LikeSerializer(post)
         like.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
     

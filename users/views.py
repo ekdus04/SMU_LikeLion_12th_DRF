@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.decorators import api_view, action
 from users.models import User
 from users.serializers import UserSerializer
@@ -73,3 +74,9 @@ def patch_password_api_view(request, user_id):
     user.set_password(new_pwd)
     user.save()
     return Response(status=status.HTTP_200_OK)
+
+class UserAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'user_id'
