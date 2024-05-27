@@ -10,13 +10,7 @@ class Post(models.Model):
     modified_at = models.DateTimeField(null=True, blank=True)
     view = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=True)
-
-class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        return self.post.title + " liked by " + self.user.username
+    likes = models.ManyToManyField(User, related_name="likes_post", blank=True)
 
 class Comment(models.Model):
     content = models.CharField(max_length=200, null=True, blank=True)

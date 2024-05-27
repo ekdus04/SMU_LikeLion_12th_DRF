@@ -2,17 +2,11 @@ from django.shortcuts import render
 from rest_framework import status,viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import CreateAPIView, DestroyAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, BasePermission
+from rest_framework.permissions import BasePermission
+from rest_framework.generics import ListCreateAPIView, DestroyAPIView
 from posts.models import Post
 from posts.models import Comment
-from posts.models import Like
-from posts.serializers import PostSerializer, CommentSerializer, LikeSerializer
-
-
-
-# 내가 좋아요한 글
-
+from posts.serializers import PostSerializer, CommentSerializer
 
 
 class IsAuthentiacatedAndIsOwnerOrReadOnly(BasePermission):
@@ -24,6 +18,10 @@ class IsAuthentiacatedAndIsOwnerOrReadOnly(BasePermission):
         if request.method in ['GET']:
             return True
         # 쓰기 권한은 객체의 소유자에게만 허용
+        return obj.user == request.user
+
+class IsOwner(BasePermission):
+    def has_permission(self, request, view, obj):
         return obj.user == request.user
     
 @api_view(['GET', 'POST'])
@@ -118,26 +116,6 @@ def comment_retrieve_api_view(request, comment_id):
     elif request.method == 'DELETE':
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# 테스트 실패
-@api_view(['POST', 'DELETE'])
-def like_api_view(request, post_id):
-    try:
-        post = Post.objects.get(pk=post_id, user=request.user)
-    except Post.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == 'POST':
-        serializer = LikeSerializer(data=post)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    elif request.method == 'DELETE':
-        like = LikeSerializer(post)
-        like.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -160,8 +138,33 @@ class CommentViewSet(viewsets.ModelViewSet):
         return post
     
     def perform_create(self, serializer):
-        post = self.get_post()
+        post = self.get_post(id)
         serializer.save(user=self.request.user, post=post)
 
+@api_view(['GET', 'POST', 'DELETE'])
+def like_list_api_view(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        likes = Post.objects.filter(id=post_id).likes
+        serializer = PostSerializer(likes, many=True)
+        return Response(serializer.data)
 
-
+    elif request.method == 'POST':
+        post.likes.add(request.user)
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    elif request.method == 'DELETE':
+        post.likes.remove()
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
