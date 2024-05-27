@@ -13,5 +13,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('comments/<int:post_id>/', views.comment_list_api_view, name='comment-list'),
     path('comment/<int:comment_id>/', views.comment_retrieve_api_view, name='comment-retrieve'),
-    path('likes/<int:post_id>/', views.like_api_view, name='like'),
+    # path('likes/<int:post_id>/', views.LikeView.as_view(), name='like'),
 ]

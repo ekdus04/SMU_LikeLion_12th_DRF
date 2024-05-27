@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.decorators import api_view, action
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from users.models import User
 from users.serializers import UserSerializer
 
@@ -78,9 +79,11 @@ def patch_password_api_view(request, user_id):
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 class UserAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'user_id'
+    permission_classes = [IsAuthenticatedOrReadOnly]

@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework import status,viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.generics import CreateAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from posts.models import Post
 from posts.models import Comment
 from posts.models import Like
@@ -72,7 +74,6 @@ def comment_list_api_view(request, post_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 def comment_retrieve_api_view(request, comment_id):
     try:
@@ -103,7 +104,7 @@ def comment_retrieve_api_view(request, comment_id):
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    
+# 테스트 실패
 @api_view(['POST', 'DELETE'])
 def like_api_view(request, post_id):
     try:
@@ -126,6 +127,8 @@ def like_api_view(request, post_id):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
