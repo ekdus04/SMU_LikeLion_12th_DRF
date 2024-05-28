@@ -141,30 +141,20 @@ class CommentViewSet(viewsets.ModelViewSet):
         post = self.get_post(id)
         serializer.save(user=self.request.user, post=post)
 
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(['POST', 'DELETE'])
 def like_list_api_view(request, post_id):
     try:
         post = Post.objects.get(id=post_id)
     except Post.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == 'GET':
-        likes = Post.objects.filter(id=post_id).likes
-        serializer = PostSerializer(likes, many=True)
-        return Response(serializer.data)
+    serializer = PostSerializer(post)
 
-    elif request.method == 'POST':
+    if request.method == 'POST':
         post.likes.add(request.user)
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'DELETE':
-        post.likes.remove()
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        post.likes.remove(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
